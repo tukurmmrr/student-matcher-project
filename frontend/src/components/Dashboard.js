@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = 'https://student-matcher-project-1.onrender.com';
 
 function MatchList({ title, description, matches, badgeClass }) {
   return (
