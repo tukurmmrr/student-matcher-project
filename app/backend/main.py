@@ -15,6 +15,7 @@ app = FastAPI()
 origins = [
     "http://localhost",
     "http://localhost:3000",
+    "https://fancy-bunny-d46e4d.netlify.app"
 ]
 
 app.add_middleware(
