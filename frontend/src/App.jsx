@@ -2,12 +2,11 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// Import the page components from their new location
+// This code assumes your components are in 'src/components/'
 import LoginPage from './components/LoginPage.jsx';
 import RegisterPage from './components/RegisterPage.jsx';
 import Dashboard from './components/Dashboard.jsx';
 
-// Import CSS files
 import './App.css'
 
 function App() {
