@@ -58,7 +58,7 @@ function Dashboard() {
   return (
     <div>
       <h2 className="text-center mb-4">Matching Algorithm Comparison</h2>
-      <a href="/" className="btn btn-secondary mb-4">Register Another Student</a>
+      <a href="/frontend/public" className="btn btn-secondary mb-4">Register Another Student</a>
       <div className="row">
         <div className="col-lg-6">
           <MatchList
