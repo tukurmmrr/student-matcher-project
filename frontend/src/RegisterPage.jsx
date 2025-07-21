@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'https://your-render-app-name.onrender.com'; // IMPORTANT: Use your live Render URL
+const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // IMPORTANT: Use your live Render URL
 
 function RegisterPage() {
     const [formData, setFormData] = useState({
