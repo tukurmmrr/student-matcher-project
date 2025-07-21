@@ -2,10 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// This code assumes your components are in 'src/components/'
-import LoginPage from './components/LoginPage.jsx';
-import RegisterPage from './components/RegisterPage.jsx';
-import Dashboard from './components/Dashboard.jsx';
+// This code assumes your components are in the SAME folder as App.jsx
+import LoginPage from './LoginPage.jsx';
+import RegisterPage from './RegisterPage.jsx';
+import Dashboard from './Dashboard.jsx';
 
 import './App.css'
 
