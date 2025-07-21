@@ -1,17 +1,14 @@
 # app/backend/schemas.py
-
 from pydantic import BaseModel
 from typing import List, Optional
 
-class InterestBase(BaseModel):
-    name: str
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
-class InterestCreate(InterestBase):
-    pass
-
-class Interest(InterestBase):
+class Interest(BaseModel):
     id: int
-
+    name: str
     class Config:
         from_attributes = True
 
@@ -19,17 +16,16 @@ class StudentBase(BaseModel):
     name: str
     email: str
     course: str
-    # --- THESE FIELDS WERE MISSING FROM YOUR 'StudentCreate' LOGIC ---
     bio: Optional[str] = None
     profile_picture_url: Optional[str] = None
-    # ----------------------------------------------------------------
+    interests: str
 
 class StudentCreate(StudentBase):
-    interests: str
+    password: str
 
 class Student(StudentBase):
     id: int
+    is_admin: bool
     interests: List[Interest] = []
-
     class Config:
         from_attributes = True

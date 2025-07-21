@@ -1,6 +1,5 @@
 # app/backend/models.py
-
-from sqlalchemy import Column, Integer, String, Table, ForeignKey
+from sqlalchemy import Column, Integer, String, Table, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -14,13 +13,11 @@ class Student(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     email = Column(String, unique=True, index=True)
+    hashed_password = Column(String, nullable=False)
+    is_admin = Column(Boolean, default=False)
     course = Column(String)
-
-    # --- THESE TWO LINES WERE MISSING FROM YOUR DEPLOYED FILE ---
     bio = Column(String, nullable=True)
     profile_picture_url = Column(String, nullable=True)
-    # -------------------------------------------------------------
-
     interests = relationship("Interest", secondary=student_interests_table, back_populates="students")
 
 class Interest(Base):

@@ -1,7 +1,7 @@
 # app/backend/crud.py
-
-from sqlalchemy.orm import Session, selectinload  # <-- 1. IMPORT selectinload
+from sqlalchemy.orm import Session, selectinload
 import models, schemas
+from security import hash_password
 
 
 def get_student_by_email(db: Session, email: str):
@@ -9,14 +9,15 @@ def get_student_by_email(db: Session, email: str):
 
 
 def get_students(db: Session, skip: int = 0, limit: int = 100):
-    # --- 2. UPDATE THIS QUERY to eagerly load the interests ---
     return db.query(models.Student).options(selectinload(models.Student.interests)).offset(skip).limit(limit).all()
 
 
 def create_student(db: Session, student: schemas.StudentCreate):
+    hashed_pwd = hash_password(student.password)
     db_student = models.Student(
         name=student.name,
         email=student.email,
+        hashed_password=hashed_pwd,
         course=student.course,
         bio=student.bio,
         profile_picture_url=student.profile_picture_url
@@ -34,12 +35,3 @@ def create_student(db: Session, student: schemas.StudentCreate):
     db.commit()
     db.refresh(db_student)
     return db_student
-
-
-def delete_student(db: Session, student_id: int):
-    db_student = db.query(models.Student).filter(models.Student.id == student_id).first()
-    if db_student:
-        db.delete(db_student)
-        db.commit()
-        return db_student
-    return None
