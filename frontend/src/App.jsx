@@ -3,9 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // This code assumes your components are in the SAME folder as App.jsx
-import LoginPage from './LoginPage.jsx';
-import RegisterPage from './RegisterPage.jsx';
-import Dashboard from './Dashboard.jsx';
+import LoginPage from './LoginPage.js';
+import RegisterPage from './RegisterPage.js';
+import Dashboard from './Dashboard.js';
 
 import './App.css'
 
