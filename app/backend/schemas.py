@@ -1,4 +1,3 @@
-# app/backend/schemas.py
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -27,9 +26,12 @@ class StudentBase(BaseModel):
 class StudentCreate(StudentBase):
     password: str
 
-class Student(StudentBase):
+class StudentInDB(BaseModel):
     id: int
+    name: str
+    email: str
     is_admin: bool
+    course: Optional[Course] = None
     interests: List[Interest] = []
     class Config:
         from_attributes = True

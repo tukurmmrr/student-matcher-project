@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'https://tukur-student-matcher-project.onrender.com/'; // Use your live Render URL
+const API_URL = 'https://tukur-student-matcher-project.onrender.com/'; // Replace with your LIVE RENDER URL
 
 function LoginPage() {
     const [formData, setFormData] = useState({ username: '', password: '' });
@@ -23,7 +23,7 @@ function LoginPage() {
 
             const response = await axios.post(`${API_URL}/token`, params);
             localStorage.setItem('accessToken', response.data.access_token);
-            window.location.href = '/dashboard'; // Force a full page reload to update state
+            navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.detail || 'Login failed.');
         }

@@ -1,5 +1,3 @@
-# app/backend/main.py
-# (This file now includes the new /courses and /interests endpoints)
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -7,17 +5,15 @@ from typing import List
 import crud, models, schemas, matching, security, auth
 from database import SessionLocal, engine
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import timedelta
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# --- CORS Middleware ---
 origins = [
     "http://localhost:3000",
-    "http://localhost:5173", # Default Vite port
-    "https://fancy-bunny-d46e4d.netlify.app",
+    "http://localhost:5173",
+    "https://studentmatcher.netlify.app",
 ]
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
@@ -28,7 +24,6 @@ def get_db():
     finally:
         db.close()
 
-# --- NEW PUBLIC ENDPOINTS ---
 @app.get("/interests", response_model=List[schemas.Interest])
 def read_interests(db: Session = Depends(get_db)):
     return crud.get_interests(db)
@@ -37,8 +32,7 @@ def read_interests(db: Session = Depends(get_db)):
 def read_courses(db: Session = Depends(get_db)):
     return crud.get_courses(db)
 
-# --- AUTHENTICATION ENDPOINTS ---
-@app.post("/register", response_model=schemas.Student)
+@app.post("/register", response_model=schemas.StudentInDB)
 def register_student(student: schemas.StudentCreate, db: Session = Depends(get_db)):
     db_student = crud.get_student_by_email(db, email=student.email)
     if db_student:
@@ -53,19 +47,20 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = auth.create_access_token(data={"sub": student.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
-# --- PROTECTED ENDPOINTS ---
-@app.get("/users/me", response_model=schemas.Student)
-async def read_users_me(current_user: schemas.Student = Depends(auth.get_current_active_user)):
+@app.get("/users/me", response_model=schemas.StudentInDB)
+async def read_users_me(current_user: models.Student = Depends(auth.get_current_user)):
     return current_user
 
 @app.get("/matches/jaccard")
-def get_jaccard_matches(db: Session = Depends(get_db), current_user: schemas.Student = Depends(auth.get_current_active_user)):
+def get_jaccard_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.get_current_user)):
     students = crud.get_students(db)
+    # The matching logic should now be updated to handle the new student object and perhaps return richer data.
+    # For now, we will assume it takes student objects and returns match data.
     matches = matching.calculate_jaccard_similarity(students, current_user.id)
     return matches
 
 @app.get("/matches/cosine")
-def get_cosine_matches(db: Session = Depends(get_db), current_user: schemas.Student = Depends(auth.get_current_active_user)):
+def get_cosine_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.get_current_user)):
     students = crud.get_students(db)
     matches = matching.calculate_cosine_similarity(students, current_user.id)
     return matches

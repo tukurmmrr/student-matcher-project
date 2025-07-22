@@ -1,4 +1,3 @@
-# app/backend/crud.py
 from sqlalchemy.orm import Session, selectinload
 import models, schemas
 from security import hash_password
@@ -10,7 +9,8 @@ def get_student_by_email(db: Session, email: str):
 
 def get_students(db: Session):
     return db.query(models.Student).options(
-        selectinload(models.Student.interests)
+        selectinload(models.Student.interests),
+        selectinload(models.Student.course)  # Eager load course
     ).all()
 
 
@@ -32,7 +32,6 @@ def create_student(db: Session, student: schemas.StudentCreate):
     )
     db.add(db_student)
 
-    # Get interest objects from the database based on the IDs provided
     interests = db.query(models.Interest).filter(models.Interest.id.in_(student.interest_ids)).all()
     db_student.interests.extend(interests)
 

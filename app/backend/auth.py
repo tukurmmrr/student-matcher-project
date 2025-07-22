@@ -1,4 +1,3 @@
-# app/backend/auth.py
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import Depends, HTTPException, status
@@ -8,11 +7,9 @@ from sqlalchemy.orm import Session
 import crud, models, schemas, security
 from database import SessionLocal
 
-# --- CONFIGURATION ---
-# This should be a complex, secret string stored in an environment variable
 SECRET_KEY = "your-super-secret-key-that-you-should-change"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -35,10 +32,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 def authenticate_user(db: Session, email: str, password: str):
     user = crud.get_student_by_email(db, email=email)
-    if not user:
-        return False
-    if not security.verify_password(password, user.hashed_password):
-        return False
+    if not user or not security.verify_password(password, user.hashed_password):
+        return None
     return user
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
@@ -58,7 +53,3 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     if user is None:
         raise credentials_exception
     return user
-
-async def get_current_active_user(current_user: models.Student = Depends(get_current_user)):
-    # In the future, you could add a check here if a user is "disabled"
-    return current_user
