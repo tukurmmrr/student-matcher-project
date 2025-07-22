@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // Use your live Render URL
+const API_URL = 'https://tukur-student-matcher-project.onrender.com/'; // Use your live Render URL
 
 function MatchList({ title, description, matches, badgeClass }) {
   // ... (MatchList component code from before, no changes needed here) ...
