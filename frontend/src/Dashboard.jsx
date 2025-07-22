@@ -1,84 +1,44 @@
-// frontend/src/components/Dashboard.jsx
-
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import AdminDashboard from './AdminDashboard.jsx';
+import UserDashboard from './UserDashboard.jsx';
 
-const API_URL = 'https://tukur-student-matcher-project.onrender.com';
-
-function MatchList({ title, description, matches, badgeClass }) {
-  return (
-    <div className="card shadow-sm mb-4">
-        <div className="card-body">
-            <h3 className="card-title">{title}</h3>
-            <p className="card-text text-muted">{description}</p>
-            {matches.length > 0 ? (
-                <ul className="list-group">
-                {matches.map((match, index) => (
-                    <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
-                        {/* This is the new, cleaner text display */}
-                        {match.student1.name} ↔ {match.student2.name}
-                        <span className={`badge ${badgeClass} rounded-pill`}>{match.score}</span>
-                    </li>
-                ))}
-                </ul>
-            ) : (
-                <p>No matches found. Register more students to see results.</p>
-            )}
-        </div>
-    </div>
-  );
-}
+const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // Use your live Render URL
 
 function Dashboard() {
-  const [jaccardMatches, setJaccardMatches] = useState([]);
-  const [cosineMatches, setCosineMatches] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchMatches = async () => {
-      setLoading(true);
-      try {
-        const jaccardRes = await axios.get(`${API_URL}/matches/jaccard`);
-        const cosineRes = await axios.get(`${API_URL}/matches/cosine`);
-        setJaccardMatches(jaccardRes.data);
-        setCosineMatches(cosineRes.data);
-      } catch (error) {
-        console.error("Failed to fetch matches:", error);
-      }
-      setLoading(false);
-    };
+    useEffect(() => {
+        const fetchUser = async () => {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
 
-    fetchMatches();
-  }, []);
+            try {
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+                const response = await axios.get(`${API_URL}/users/me`, config);
+                setUser(response.data);
+            } catch (error) {
+                console.error("Failed to fetch user:", error);
+                localStorage.removeItem('accessToken');
+                navigate('/login');
+            }
+            setLoading(false);
+        };
+        fetchUser();
+    }, [navigate]);
 
-  if (loading) {
-    return <div className="text-center"><h4>Loading matches...</h4></div>;
-  }
+    if (loading) {
+        return <div className="text-center"><h4>Loading dashboard...</h4></div>;
+    }
 
-  return (
-    <div>
-      <h2 className="text-center mb-4">Matching Algorithm Comparison</h2>
-      <a href="/frontend/public" className="btn btn-secondary mb-4">Register Another Student</a>
-      <div className="row">
-        <div className="col-lg-6">
-          <MatchList
-            title="Algorithm 1: Jaccard Similarity"
-            description="Measures simple overlap and course."
-            matches={jaccardMatches}
-            badgeClass="bg-primary"
-          />
-        </div>
-        <div className="col-lg-6">
-          <MatchList
-            title="Algorithm 2: Cosine Similarity (TF-IDF)"
-            description="Finds similar taste by weighing rare interests and course."
-            matches={cosineMatches}
-            badgeClass="bg-success"
-          />
-        </div>
-      </div>
-    </div>
-  );
+    // This is the logic that shows the correct dashboard
+    return user && user.is_admin ? <AdminDashboard /> : <UserDashboard />;
 }
 
 export default Dashboard;

@@ -12,13 +12,17 @@ class Interest(BaseModel):
     class Config:
         from_attributes = True
 
+class Course(BaseModel):
+    id: int
+    name: str
+    class Config:
+        from_attributes = True
+
 class StudentBase(BaseModel):
     name: str
     email: str
-    course: str
-    bio: Optional[str] = None
-    profile_picture_url: Optional[str] = None
-    interests: str
+    course_id: int
+    interest_ids: List[int]
 
 class StudentCreate(StudentBase):
     password: str

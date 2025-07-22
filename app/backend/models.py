@@ -15,13 +15,15 @@ class Student(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String, nullable=False)
     is_admin = Column(Boolean, default=False)
-    course = Column(String)
-    bio = Column(String, nullable=True)
-    profile_picture_url = Column(String, nullable=True)
-    interests = relationship("Interest", secondary=student_interests_table, back_populates="students")
+    course_id = Column(Integer, ForeignKey('courses.id'))
+    interests = relationship("Interest", secondary=student_interests_table)
 
 class Interest(Base):
     __tablename__ = "interests"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
-    students = relationship("Student", secondary=student_interests_table, back_populates="interests")
+
+class Course(Base):
+    __tablename__ = "courses"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)

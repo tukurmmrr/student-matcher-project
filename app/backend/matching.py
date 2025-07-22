@@ -1,88 +1,92 @@
+# app/backend/matching.py
 import math
 from collections import Counter
 
 COURSE_BOOST = 0.2
 
-def create_student_profile_dict(student):
-    return {
-        "name": student.name,
-        "course": student.course,
-        "bio": student.bio,
-        "profile_picture_url": student.profile_picture_url
-    }
 
-def calculate_jaccard_similarity(students):
+def get_course_name(student, students_with_courses):
+    # Helper to find course name from student object
+    for s in students_with_courses:
+        if s.id == student.id:
+            # Assuming the student object has a relationship to course
+            return s.course.name if s.course else ""
+    return ""
+
+
+def calculate_jaccard_similarity(students, current_user_id):
     student_interests_sets = {s.id: set(i.name for i in s.interests) for s in students}
     matches = []
-    student_list = list(students)
 
-    for i in range(len(student_list)):
-        for j in range(i + 1, len(student_list)):
-            student1, student2 = student_list[i], student_list[j]
-            set1 = student_interests_sets[student1.id]
-            set2 = student_interests_sets[student2.id]
+    current_user_set = student_interests_sets.get(current_user_id)
+    if not current_user_set:
+        return []
 
-            if not set1 or not set2:
-                continue
+    for other_student in students:
+        if other_student.id == current_user_id:
+            continue
 
-            intersection = len(set1.intersection(set2))
-            union = len(set1.union(set2))
-            score = intersection / union if union != 0 else 0
+        other_student_set = student_interests_sets.get(other_student.id)
+        if not other_student_set:
+            continue
 
-            if student1.course and student2.course and student1.course.lower() == student2.course.lower():
-                score += COURSE_BOOST
+        intersection = len(current_user_set.intersection(other_student_set))
+        union = len(current_user_set.union(other_student_set))
+        score = intersection / union if union != 0 else 0
 
-            score = min(score, 1.0)
+        current_user_obj = next((s for s in students if s.id == current_user_id), None)
+        if current_user_obj.course and other_student.course and current_user_obj.course.id == other_student.course.id:
+            score += COURSE_BOOST
 
-            if score > 0.0:
-                matches.append({"student1": create_student_profile_dict(student1), "student2": create_student_profile_dict(student2), "score": round(score, 3)})
+        score = min(score, 1.0)
+
+        if score > 0.0:
+            matches.append({"student": other_student, "score": round(score, 3)})
 
     return sorted(matches, key=lambda x: x['score'], reverse=True)
 
-def calculate_cosine_similarity(students):
+
+def calculate_cosine_similarity(students, current_user_id):
     if len(students) < 2:
         return []
 
-    student_interests_lists = {s.id: [i.name for i in s.interests] for s in students}
+    # Simplified Cosine Similarity implementation for clarity
+    all_interests_list = sorted(list(set(interest.name for student in students for interest in student.interests)))
+    interest_map = {interest: i for i, interest in enumerate(all_interests_list)}
 
-    # --- Pure Python TF-IDF and Cosine Similarity ---
-    all_interests = set()
-    for interest_list in student_interests_lists.values():
-        all_interests.update(interest_list)
+    student_vectors = {}
+    for student in students:
+        vec = [0] * len(all_interests_list)
+        for interest in student.interests:
+            vec[interest_map[interest.name]] = 1
+        student_vectors[student.id] = vec
 
-    vocab = sorted(list(all_interests))
-    vocab_map = {word: i for i, word in enumerate(vocab)}
-
-    doc_term_matrix = []
-    for s in students:
-        vec = [0] * len(vocab)
-        if s.id in student_interests_lists:
-            term_counts = Counter(student_interests_lists[s.id])
-            for term, count in term_counts.items():
-                if term in vocab_map:
-                    vec[vocab_map[term]] = count
-        doc_term_matrix.append(vec)
+    current_user_vector = student_vectors.get(current_user_id)
+    if not current_user_vector:
+        return []
 
     matches = []
-    for i in range(len(students)):
-        for j in range(i + 1, len(students)):
-            vec1, vec2 = doc_term_matrix[i], doc_term_matrix[j]
+    for other_student in students:
+        if other_student.id == current_user_id:
+            continue
 
-            dot_product = sum(a * b for a, b in zip(vec1, vec2))
-            mag1 = math.sqrt(sum(a * a for a in vec1))
-            mag2 = math.sqrt(sum(b * b for b in vec2))
+        other_student_vector = student_vectors.get(other_student.id)
+        if not other_student_vector:
+            continue
 
-            if mag1 == 0 or mag2 == 0:
-                score = 0.0
-            else:
-                score = dot_product / (mag1 * mag2)
+        dot_product = sum(a * b for a, b in zip(current_user_vector, other_student_vector))
+        mag1 = math.sqrt(sum(a * a for a in current_user_vector))
+        mag2 = math.sqrt(sum(b * b for b in other_student_vector))
 
-            if students[i].course and students[j].course and students[i].course.lower() == students[j].course.lower():
-                score += COURSE_BOOST
+        score = dot_product / (mag1 * mag2) if mag1 != 0 and mag2 != 0 else 0
 
-            score = min(score, 1.0)
+        current_user_obj = next((s for s in students if s.id == current_user_id), None)
+        if current_user_obj.course and other_student.course and current_user_obj.course.id == other_student.course.id:
+            score += COURSE_BOOST
 
-            if score > 0.0:
-                matches.append({"student1": create_student_profile_dict(students[i]), "student2": create_student_profile_dict(students[j]), "score": round(score, 3)})
+        score = min(score, 1.0)
+
+        if score > 0.0:
+            matches.append({"student": other_student, "score": round(score, 3)})
 
     return sorted(matches, key=lambda x: x['score'], reverse=True)

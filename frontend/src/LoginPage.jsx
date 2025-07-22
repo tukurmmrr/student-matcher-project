@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // IMPORTANT: Use your live Render URL
+const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // Use your live Render URL
 
 function LoginPage() {
-    const [formData, setFormData] = useState({
-        username: '', // FastAPI's OAuth2 expects 'username'
-        password: ''
-    });
+    const [formData, setFormData] = useState({ username: '', password: '' });
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
@@ -19,20 +16,14 @@ function LoginPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-
         try {
-            // FastAPI's OAuth2 form data needs to be sent in a specific way
             const params = new URLSearchParams();
             params.append('username', formData.username);
             params.append('password', formData.password);
 
             const response = await axios.post(`${API_URL}/token`, params);
-
-            // Store the token to prove we are logged in
             localStorage.setItem('accessToken', response.data.access_token);
-
-            navigate('/dashboard'); // Redirect to dashboard on successful login
-
+            window.location.href = '/dashboard'; // Force a full page reload to update state
         } catch (err) {
             setError(err.response?.data?.detail || 'Login failed.');
         }
@@ -54,12 +45,11 @@ function LoginPage() {
                     </div>
                     <button type="submit" className="btn btn-primary w-100">Log In</button>
                     <p className="text-center mt-3">
-                        Don't have an account? <a href="/register">Register here</a>
+                        Don't have an account? <Link to="/register">Register here</Link>
                     </p>
                 </form>
             </div>
         </div>
     );
 }
-
 export default LoginPage;
