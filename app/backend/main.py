@@ -13,9 +13,11 @@ app = FastAPI()
 origins = [
     "http://localhost:3000",
     "http://localhost:5173",
-    "https://studentmatcher.netlify.app", # Removed trailing slash
+    "https://studentmatcher.netlify.app",
 ]
-app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"],
+                   allow_headers=["*"])
+
 
 def get_db():
     db = SessionLocal()
@@ -24,13 +26,17 @@ def get_db():
     finally:
         db.close()
 
+
+# (All your other endpoints remain the same)
 @app.get("/interests", response_model=List[schemas.Interest])
 def read_interests(db: Session = Depends(get_db)):
     return crud.get_interests(db)
 
+
 @app.get("/courses", response_model=List[schemas.Course])
 def read_courses(db: Session = Depends(get_db)):
     return crud.get_courses(db)
+
 
 @app.post("/register", response_model=schemas.StudentInDB)
 def register_student(student: schemas.StudentCreate, db: Session = Depends(get_db)):
@@ -38,6 +44,7 @@ def register_student(student: schemas.StudentCreate, db: Session = Depends(get_d
     if db_student:
         raise HTTPException(status_code=400, detail="Email already registered")
     return crud.create_student(db=db, student=student)
+
 
 @app.post("/token", response_model=schemas.Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -47,20 +54,34 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = auth.create_access_token(data={"sub": student.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 @app.get("/users/me", response_model=schemas.StudentInDB)
 async def read_users_me(current_user: models.Student = Depends(auth.get_current_user)):
     return current_user
 
+
 @app.get("/matches/jaccard")
 def get_jaccard_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.get_current_user)):
     students = crud.get_students(db)
-    # The matching logic should now be updated to handle the new student object and perhaps return richer data.
-    # For now, we will assume it takes student objects and returns match data.
     matches = matching.calculate_jaccard_similarity(students, current_user.id)
     return matches
+
 
 @app.get("/matches/cosine")
 def get_cosine_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.get_current_user)):
     students = crud.get_students(db)
     matches = matching.calculate_cosine_similarity(students, current_user.id)
     return matches
+
+
+# --- NEW SECRET ENDPOINT TO MAKE YOU AN ADMIN ---
+@app.get("/_make_admin_")
+def make_admin(db: Session = Depends(get_db)):
+    admin_email = "tukurmmr@gmail.com"
+    user = db.query(models.Student).filter(models.Student.email == admin_email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail=f"User {admin_email} not found. Please register first.")
+
+    user.is_admin = True
+    db.commit()
+    return {"message": f"User {admin_email} has been made an admin."}
