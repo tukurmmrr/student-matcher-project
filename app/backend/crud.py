@@ -4,13 +4,17 @@ from security import hash_password
 
 
 def get_student_by_email(db: Session, email: str):
-    return db.query(models.Student).filter(models.Student.email == email).first()
+    # This is the crucial fix: we must load relationships here too.
+    return db.query(models.Student).options(
+        selectinload(models.Student.interests),
+        selectinload(models.Student.course)
+    ).filter(models.Student.email == email).first()
 
 
 def get_students(db: Session):
     return db.query(models.Student).options(
         selectinload(models.Student.interests),
-        selectinload(models.Student.course)  # Eager load course
+        selectinload(models.Student.course)
     ).all()
 
 

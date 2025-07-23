@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'https://tukur-student-matcher-project.onrender.com/'; // We will test everything locally first
+const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // We will test everything locally first
 
 function RegisterPage() {
     const [formData, setFormData] = useState({

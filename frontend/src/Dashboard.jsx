@@ -4,7 +4,7 @@ import axios from 'axios';
 import AdminDashboard from './AdminDashboard.jsx';
 import UserDashboard from './UserDashboard.jsx';
 
-const API_URL = 'https://tukur-student-matcher-project.onrender.com/'; // Use your live Render URL
+const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // Use your live Render URL
 
 function Dashboard() {
     const [user, setUser] = useState(null);

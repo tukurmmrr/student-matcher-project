@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'https://tukur-student-matcher-project.onrender.com/'; // Replace with your LIVE RENDER URL
+const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // Replace with your LIVE RENDER URL
 
 function LoginPage() {
     const [formData, setFormData] = useState({ username: '', password: '' });
