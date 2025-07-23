@@ -17,6 +17,16 @@ class Course(BaseModel):
     class Config:
         from_attributes = True
 
+class StudentInDB(BaseModel):
+    id: int
+    name: str
+    email: str
+    is_admin: bool
+    course: Optional[Course] = None
+    interests: List[Interest] = []
+    class Config:
+        from_attributes = True
+
 class StudentBase(BaseModel):
     name: str
     email: str
@@ -26,12 +36,9 @@ class StudentBase(BaseModel):
 class StudentCreate(StudentBase):
     password: str
 
-class StudentInDB(BaseModel):
-    id: int
-    name: str
-    email: str
-    is_admin: bool
-    course: Optional[Course] = None
-    interests: List[Interest] = []
+# --- NEW SCHEMA FOR MATCHES ---
+class Match(BaseModel):
+    student: StudentInDB
+    score: float
     class Config:
         from_attributes = True

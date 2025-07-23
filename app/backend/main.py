@@ -27,7 +27,6 @@ def get_db():
         db.close()
 
 
-# (All your other endpoints remain the same)
 @app.get("/interests", response_model=List[schemas.Interest])
 def read_interests(db: Session = Depends(get_db)):
     return crud.get_interests(db)
@@ -60,24 +59,26 @@ async def read_users_me(current_user: models.Student = Depends(auth.get_current_
     return current_user
 
 
-@app.get("/matches/jaccard")
-def get_jaccard_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.get_current_user)):
+@app.get("/matches/jaccard", response_model=List[schemas.AdminMatch])
+def get_jaccard_matches(db: Session = Depends(get_db),
+                        current_user: models.Student = Depends(auth.get_current_active_user)):
     students = crud.get_students(db)
-    matches = matching.calculate_jaccard_similarity(students, current_user.id)
+    matches = matching.calculate_jaccard_similarity(students)
     return matches
 
 
-@app.get("/matches/cosine")
-def get_cosine_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.get_current_user)):
+@app.get("/matches/cosine", response_model=List[schemas.UserMatch])
+def get_cosine_matches(db: Session = Depends(get_db),
+                       current_user: models.Student = Depends(auth.get_current_active_user)):
     students = crud.get_students(db)
     matches = matching.calculate_cosine_similarity(students, current_user.id)
     return matches
 
 
-# --- NEW SECRET ENDPOINT TO MAKE YOU AN ADMIN ---
+# --- SECRET ENDPOINT TO MAKE YOU AN ADMIN ---
 @app.get("/_make_admin_")
 def make_admin(db: Session = Depends(get_db)):
-    admin_email = "tukurmmr@gmail.com"
+    admin_email = "tukurmmr@gmail.com"  # Your admin email
     user = db.query(models.Student).filter(models.Student.email == admin_email).first()
     if not user:
         raise HTTPException(status_code=404, detail=f"User {admin_email} not found. Please register first.")
