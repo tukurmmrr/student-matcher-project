@@ -2,11 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'https://tukur-student-matcher-project.onrender.com/'; // Use your live Render URL
+const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // Use your live Render URL
 
+// --- THIS COMPONENT WAS MISSING ---
 function MatchList({ title, description, matches, badgeClass }) {
-  // ... (MatchList component code from before, no changes needed here) ...
+  return (
+    <div className="card shadow-sm mb-4">
+        <div className="card-body">
+            <h3 className="card-title">{title}</h3>
+            <p className="card-text text-muted">{description}</p>
+            {matches.length > 0 ? (
+                <ul className="list-group">
+                {matches.map((match, index) => (
+                    <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                        {match.student1.name} ↔ {match.student2.name}
+                        <span className={`badge ${badgeClass} rounded-pill`}>{match.score}</span>
+                    </li>
+                ))}
+                </ul>
+            ) : (
+                <p>No matches found.</p>
+            )}
+        </div>
+    </div>
+  );
 }
+// ------------------------------------
 
 function AdminDashboard() {
     const [jaccardMatches, setJaccardMatches] = useState([]);
@@ -58,10 +79,20 @@ function AdminDashboard() {
             <a href="/register" className="btn btn-secondary mb-4">Register Another Student</a>
             <div className="row">
                 <div className="col-lg-6">
-                    {/* ... (Jaccard MatchList component from before) ... */}
+                    <MatchList
+                        title="Jaccard Similarity"
+                        description="Measures simple overlap."
+                        matches={jaccardMatches}
+                        badgeClass="bg-primary"
+                      />
                 </div>
                 <div className="col-lg-6">
-                    {/* ... (Cosine MatchList component from before) ... */}
+                     <MatchList
+                        title="Cosine Similarity"
+                        description="Weighs rare interests more heavily."
+                        matches={cosineMatches}
+                        badgeClass="bg-success"
+                      />
                 </div>
             </div>
         </div>
