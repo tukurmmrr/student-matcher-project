@@ -36,12 +36,7 @@ class StudentBase(BaseModel):
 class StudentCreate(StudentBase):
     password: str
 
-# --- THIS CLASS WAS MISSING ---
-class StudentUpdate(BaseModel):
-    course_id: int
-    interest_ids: List[int]
-# --------------------------------
-
+# Schema for the Admin's detailed pair-wise comparison
 class AdminMatchStudent(BaseModel):
     name: str
     course: Optional[str] = None
@@ -51,6 +46,7 @@ class AdminMatch(BaseModel):
     student2: AdminMatchStudent
     score: float
 
+# Schema for the User's simple list of matches
 class UserMatch(BaseModel):
     student: StudentInDB
-    score: float
+    score: float # The backend still sends the score, but we will hide it on the frontend
