@@ -46,18 +46,21 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 async def read_users_me(current_user: models.Student = Depends(auth.get_current_user)):
     return current_user
 
-# Admin endpoint
+# --- ADMIN ENDPOINT ---
 @app.get("/matches/admin", response_model=List[schemas.AdminMatch])
-def get_jaccard_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.require_admin)):
+def get_admin_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.require_admin)):
     students = crud.get_students(db)
+    # The Jaccard function is now for the admin view
     return matching.calculate_jaccard_similarity(students)
 
-# User endpoint
+# --- USER ENDPOINT ---
 @app.get("/matches/user", response_model=List[schemas.UserMatch])
-def get_cosine_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.get_current_active_user)):
+def get_user_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.get_current_active_user)):
     students = crud.get_students(db)
+    # The Cosine function is for the user view
     return matching.calculate_cosine_similarity(students, current_user.id)
 
+# --- Secret endpoint to make an admin ---
 @app.get("/_make_admin_")
 def make_admin(db: Session = Depends(get_db)):
     admin_email = "tukurmmr@gmail.com"

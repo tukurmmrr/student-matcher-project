@@ -1,27 +1,21 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
-
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-
 class Interest(BaseModel):
     id: int
     name: str
-
     class Config:
         from_attributes = True
-
 
 class Course(BaseModel):
     id: int
     name: str
-
     class Config:
         from_attributes = True
-
 
 class StudentInDB(BaseModel):
     id: int
@@ -30,10 +24,8 @@ class StudentInDB(BaseModel):
     is_admin: bool
     course: Optional[Course] = None
     interests: List[Interest] = []
-
     class Config:
         from_attributes = True
-
 
 class StudentBase(BaseModel):
     name: str
@@ -41,28 +33,20 @@ class StudentBase(BaseModel):
     course_id: int
     interest_ids: List[int]
 
-
 class StudentCreate(StudentBase):
     password: str
 
-
-# --- NEW SCHEMA FOR PROFILE UPDATES ---
-class StudentUpdate(BaseModel):
-    course_id: int
-    interest_ids: List[int]
-
-
+# Schema for the Admin's detailed pair-wise comparison
 class AdminMatchStudent(BaseModel):
     name: str
     course: Optional[str] = None
-
 
 class AdminMatch(BaseModel):
     student1: AdminMatchStudent
     student2: AdminMatchStudent
     score: float
 
-
+# Schema for the User's simple list of matches
 class UserMatch(BaseModel):
     student: StudentInDB
-    score: float
+    score: float # The backend still sends the score, but we will hide it on the frontend
