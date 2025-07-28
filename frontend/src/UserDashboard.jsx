@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'https://tukur-student-matcher-project.onrender.com';
+const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // Your live Render URL
 
 function UserDashboard() {
     const [matches, setMatches] = useState([]);
@@ -29,12 +29,10 @@ function UserDashboard() {
         fetchMatches();
     }, [navigate]);
 
-    // --- THIS LOGOUT HANDLER WAS MISSING ---
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
         navigate('/login');
     };
-    // ---------------------------------------
 
     if (loading) return <p>Loading your matches...</p>;
     if (error) return <p className="text-danger">{error}</p>;
@@ -48,9 +46,13 @@ function UserDashboard() {
             {matches.length > 0 ? (
                 <ul className="list-group">
                     {matches.map((match, index) => (
-                        <li key={index} className="list-group-item">
-                            <h5>{match.student.name}</h5>
-                            <p>Course: {match.student.course ? match.student.course.name : 'N/A'}</p>
+                        <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                           <div>
+                             <h5>{match.student.name}</h5>
+                             {/* This line is now safe because the backend guarantees the course object exists */}
+                             <p className="mb-0 text-muted">Course: {match.student.course.name}</p>
+                           </div>
+                           <span className="badge bg-success rounded-pill">{match.score.toFixed(2)}</span>
                         </li>
                     ))}
                 </ul>
