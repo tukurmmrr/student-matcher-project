@@ -1,37 +1,38 @@
 import React from 'react';
-// --- THE MISSING 'useNavigate' IS NOW ADDED HERE ---
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import LoginPage from './components/LoginPage.jsx';
-import RegisterPage from './components/RegisterPage.jsx';
-import Dashboard from './components/Dashboard.jsx';
-import ProfilePage from './components/ProfilePage.jsx';
+// This code matches your GitHub structure by importing directly from src
+import LoginPage from './LoginPage.jsx';
+import RegisterPage from './RegisterPage.jsx';
+import Dashboard from './Dashboard.jsx';
+import ProfilePage from './ProfilePage.jsx';
+
 import './App.css'
 
+// This is a new component for the navigation bar
 const AppNav = () => {
     const token = localStorage.getItem('accessToken');
     const navigate = useNavigate();
 
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
-        // We use window.location to force a full refresh, which is more reliable.
-        window.location.href = '/login';
+        navigate('/login');
     };
 
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-light mb-4">
             <div className="container-fluid">
-                <Link className="navbar-brand" to="/">🎓 Student Matcher</Link>
+                <a className="navbar-brand" href="/">🎓 Student Matcher</a>
                 <div className="collapse navbar-collapse">
                     <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
                         {token ? (
                             <>
                                 <li className="nav-item">
-                                    <Link className="nav-link" to="/dashboard">Dashboard</Link>
+                                    <a className="nav-link" href="/dashboard">Dashboard</a>
                                 </li>
                                 <li className="nav-item">
-                                    <Link className="nav-link" to="/profile">My Profile</Link>
+                                    <a className="nav-link" href="/profile">My Profile</a>
                                 </li>
                                 <li className="nav-item">
                                     <button className="btn btn-link nav-link" onClick={handleLogout}>Log Out</button>
@@ -40,10 +41,10 @@ const AppNav = () => {
                         ) : (
                             <>
                                 <li className="nav-item">
-                                    <Link className="nav-link" to="/login">Login</Link>
+                                    <a className="nav-link" href="/login">Login</a>
                                 </li>
                                 <li className="nav-item">
-                                    <Link className="nav-link" to="/register">Register</Link>
+                                    <a className="nav-link" href="/register">Register</a>
                                 </li>
                             </>
                         )}
@@ -53,7 +54,6 @@ const AppNav = () => {
         </nav>
     );
 };
-
 
 function App() {
   return (
