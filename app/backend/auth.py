@@ -4,7 +4,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-import crud, models, schemas, security
+import crud, models, security
 from database import SessionLocal
 
 SECRET_KEY = "your-super-secret-key-that-you-should-change"
@@ -54,7 +54,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         raise credentials_exception
     return user
 
-# --- THIS FUNCTION WAS MISSING ---
-async def get_current_active_user(current_user: models.Student = Depends(get_current_user)):
-    # In the future, you could add a check here if a user is "disabled"
+def require_admin(current_user: models.Student = Depends(get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin privileges required")
     return current_user

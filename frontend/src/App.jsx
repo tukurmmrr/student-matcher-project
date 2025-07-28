@@ -1,27 +1,70 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// This code assumes your components are in the SAME folder as App.jsx
-import LoginPage from './LoginPage.jsx';
-import RegisterPage from './RegisterPage.jsx';
-import Dashboard from './Dashboard.jsx';
-
+import LoginPage from './components/LoginPage.jsx';
+import RegisterPage from './components/RegisterPage.jsx';
+import Dashboard from './components/Dashboard.jsx';
+import ProfilePage from './components/ProfilePage.jsx'; // Import the new page
 import './App.css'
+
+const AppNav = () => {
+    const token = localStorage.getItem('accessToken');
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        localStorage.removeItem('accessToken');
+        navigate('/login');
+    };
+
+    return (
+        <nav className="navbar navbar-expand-lg navbar-light bg-light mb-4">
+            <div className="container-fluid">
+                <Link className="navbar-brand" to="/">🎓 Student Matcher</Link>
+                <div className="collapse navbar-collapse">
+                    <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+                        {token ? (
+                            <>
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/dashboard">Dashboard</Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/profile">My Profile</Link>
+                                </li>
+                                <li className="nav-item">
+                                    <button className="btn btn-link nav-link" onClick={handleLogout}>Log Out</button>
+                                </li>
+                            </>
+                        ) : (
+                            <>
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/login">Login</Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/register">Register</Link>
+                                </li>
+                            </>
+                        )}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    );
+};
+
 
 function App() {
   return (
     <Router>
+        <AppNav />
         <div className="container mt-4">
-            <header className="text-center mb-5">
-                <h1>🎓 Student Buddy System</h1>
-            </header>
             <main>
                 <Routes>
                     <Route path="/" element={<Navigate to="/login" />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/profile" element={<ProfilePage />} />
                 </Routes>
             </main>
         </div>

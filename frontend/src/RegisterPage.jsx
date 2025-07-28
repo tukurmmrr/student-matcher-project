@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // We will test everything locally first
+const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // Your live Render URL
 
 function RegisterPage() {
+    const [step, setStep] = useState(1); // To control which step is shown
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -75,57 +76,56 @@ function RegisterPage() {
         <div className="card shadow-sm">
             <div className="card-body">
                 <h3 className="card-title text-center mb-4">Create Your Account</h3>
-                <form onSubmit={handleSubmit}>
-                    {error && <div className="alert alert-danger">{error}</div>}
-                    {success && <div className="alert alert-success">{success}</div>}
+                {error && <div className="alert alert-danger">{error}</div>}
+                {success && <div className="alert alert-success">{success}</div>}
 
-                    {/* --- MISSING FIELDS ARE NOW ADDED --- */}
-                    <div className="mb-3">
-                        <label className="form-label">Full Name</label>
-                        <input type="text" name="name" className="form-control" onChange={handleChange} required />
-                    </div>
-                    <div className="mb-3">
-                        <label className="form-label">Email</label>
-                        <input type="email" name="email" className="form-control" onChange={handleChange} required />
-                    </div>
-                    <div className="mb-3">
-                        <label className="form-label">Password</label>
-                        <input type="password" name="password" className="form-control" onChange={handleChange} required />
-                    </div>
-                    {/* ------------------------------------ */}
-
-                    <div className="mb-3">
-                        <label className="form-label">Course of Study</label>
-                        <select name="course_id" className="form-select" value={formData.course_id} onChange={handleChange} required>
-                            <option value="" disabled>Select your course</option>
-                            {courses.map(course => (
-                                <option key={course.id} value={course.id}>{course.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="mb-3">
-                        <label className="form-label">Interests</label>
-                        <div className="interest-grid">
-                            {interests.map(interest => (
-                                <div key={interest.id} className="form-check">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        id={`interest-${interest.id}`}
-                                        onChange={() => handleInterestChange(interest.id)}
-                                        checked={selectedInterests.has(interest.id)}
-                                    />
-                                    <label className="form-check-label" htmlFor={`interest-${interest.id}`}>
-                                        {interest.name}
-                                    </label>
-                                </div>
-                            ))}
+                {step === 1 && (
+                    <form onSubmit={() => setStep(2)}>
+                        <div className="mb-3">
+                            <label className="form-label">Full Name</label>
+                            <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} required />
                         </div>
-                    </div>
-                    <button type="submit" className="btn btn-primary w-100">Register</button>
-                    <p className="text-center mt-2">Already have an account? <Link to="/login">Login</Link></p>
-                </form>
+                        <div className="mb-3">
+                            <label className="form-label">Email</label>
+                            <input type="email" name="email" className="form-control" value={formData.email} onChange={handleChange} required />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Password</label>
+                            <input type="password" name="password" className="form-control" value={formData.password} onChange={handleChange} required />
+                        </div>
+                        <button type="submit" className="btn btn-primary w-100">Next: Select Course & Interests</button>
+                    </form>
+                )}
+
+                {step === 2 && (
+                    <form onSubmit={handleSubmit}>
+                         <div className="mb-3">
+                            <label className="form-label">Course of Study</label>
+                            <select name="course_id" className="form-select" value={formData.course_id} onChange={handleChange} required>
+                                <option value="" disabled>Select your course</option>
+                                {courses.map(course => (
+                                    <option key={course.id} value={course.id}>{course.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Interests</label>
+                            <div className="interest-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                {interests.map(interest => (
+                                    <div key={interest.id} className="form-check">
+                                        <input className="form-check-input" type="checkbox" id={`interest-${interest.id}`} onChange={() => handleInterestChange(interest.id)} checked={selectedInterests.has(interest.id)}/>
+                                        <label className="form-check-label" htmlFor={`interest-${interest.id}`}>{interest.name}</label>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="d-flex justify-content-between">
+                            <button type="button" className="btn btn-secondary" onClick={() => setStep(1)}>Back</button>
+                            <button type="submit" className="btn btn-success">Complete Registration</button>
+                        </div>
+                    </form>
+                )}
+                 <p className="text-center mt-3">Already have an account? <Link to="/login">Login</Link></p>
             </div>
         </div>
     );
