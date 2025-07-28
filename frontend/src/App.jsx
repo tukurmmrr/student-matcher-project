@@ -1,23 +1,22 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// --- THE MISSING 'useNavigate' IS NOW ADDED HERE ---
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// This code matches your GitHub structure by importing directly from src
-import LoginPage from './LoginPage.jsx';
-import RegisterPage from './RegisterPage.jsx';
-import Dashboard from './Dashboard.jsx';
-import ProfilePage from './ProfilePage.jsx';
-
+import LoginPage from './components/LoginPage.jsx';
+import RegisterPage from './components/RegisterPage.jsx';
+import Dashboard from './components/Dashboard.jsx';
+import ProfilePage from './components/ProfilePage.jsx';
 import './App.css'
 
-// This is a new component for the navigation bar
 const AppNav = () => {
     const token = localStorage.getItem('accessToken');
     const navigate = useNavigate();
 
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
-        navigate('/login');
+        // We use window.location to force a full refresh, which is more reliable.
+        window.location.href = '/login';
     };
 
     return (
@@ -54,6 +53,7 @@ const AppNav = () => {
         </nav>
     );
 };
+
 
 function App() {
   return (
