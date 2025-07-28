@@ -4,7 +4,7 @@ from security import hash_password
 
 
 def get_student_by_email(db: Session, email: str):
-    # This is the crucial fix: we must load relationships here too.
+    # This is a crucial fix: we must load relationships here too.
     return db.query(models.Student).options(
         selectinload(models.Student.interests),
         selectinload(models.Student.course)

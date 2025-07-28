@@ -1,16 +1,15 @@
 import math
-from collections import Counter
-import models  # Import models to use its classes
+import models
 
 
-def create_student_profile_dict(student: models.Student):
+def create_admin_profile_dict(student: models.Student):
     return {
         "name": student.name,
-        "course": student.course.name if student.course else None,
+        "course": student.course.name if student.course else "N/A",
     }
 
 
-def calculate_jaccard_similarity(students, current_user_id):
+def calculate_jaccard_similarity(students):
     student_interests_sets = {s.id: set(i.name for i in s.interests) for s in students}
     matches = []
     student_list = list(students)
@@ -36,8 +35,8 @@ def calculate_jaccard_similarity(students, current_user_id):
 
             if score > 0.0:
                 matches.append({
-                    "student1": create_student_profile_dict(student1),
-                    "student2": create_student_profile_dict(student2),
+                    "student1": create_admin_profile_dict(student1),
+                    "student2": create_admin_profile_dict(student2),
                     "score": round(score, 3)
                 })
 
@@ -45,7 +44,29 @@ def calculate_jaccard_similarity(students, current_user_id):
 
 
 def calculate_cosine_similarity(students, current_user_id):
-    # This function can be complex, for simplicity we will return Jaccard results for both
-    # or implement a simplified version later if needed.
-    # For the purpose of getting the app working, we reuse the Jaccard logic.
-    return calculate_jaccard_similarity(students, current_user_id)
+    matches = []
+    current_user_obj = next((s for s in students if s.id == current_user_id), None)
+    if not current_user_obj: return []
+
+    current_user_interests = set(i.name for i in current_user_obj.interests)
+    if not current_user_interests: return []
+
+    for other_student in students:
+        if other_student.id == current_user_id: continue
+
+        other_student_interests = set(i.name for i in other_student.interests)
+        if not other_student_interests: continue
+
+        intersection = len(current_user_interests.intersection(other_student_interests))
+        union = len(current_user_interests.union(other_student_interests))
+        score = intersection / union if union != 0 else 0
+
+        if current_user_obj.course and other_student.course and current_user_obj.course.id == other_student.course.id:
+            score += 0.2
+
+        score = min(score, 1.0)
+
+        if score > 0.0:
+            matches.append({"student": other_student, "score": score})
+
+    return sorted(matches, key=lambda x: x['score'], reverse=True)

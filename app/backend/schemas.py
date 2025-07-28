@@ -36,23 +36,15 @@ class StudentBase(BaseModel):
 class StudentCreate(StudentBase):
     password: str
 
-# --- THESE MODELS WERE MISSING ---
-
 class AdminMatchStudent(BaseModel):
     name: str
     course: Optional[str] = None
-    class Config:
-        from_attributes = True
 
 class AdminMatch(BaseModel):
     student1: AdminMatchStudent
     student2: AdminMatchStudent
     score: float
-    class Config:
-        from_attributes = True
 
 class UserMatch(BaseModel):
     student: StudentInDB
     score: float
-    class Config:
-        from_attributes = True

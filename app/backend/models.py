@@ -4,9 +4,11 @@ from database import Base
 
 # --- THIS TABLE DEFINITION MUST BE BEFORE THE STUDENT CLASS ---
 student_interests_table = Table('student_interests', Base.metadata,
-    Column('student_id', Integer, ForeignKey('students.id'), primary_key=True),
-    Column('interest_id', Integer, ForeignKey('interests.id'), primary_key=True)
-)
+                                Column('student_id', Integer, ForeignKey('students.id'), primary_key=True),
+                                Column('interest_id', Integer, ForeignKey('interests.id'), primary_key=True)
+                                )
+
+
 # -----------------------------------------------------------
 
 class Student(Base):
@@ -20,10 +22,12 @@ class Student(Base):
     course = relationship("Course")
     interests = relationship("Interest", secondary=student_interests_table)
 
+
 class Interest(Base):
     __tablename__ = "interests"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
+
 
 class Course(Base):
     __tablename__ = "courses"
