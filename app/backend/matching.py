@@ -1,5 +1,6 @@
 import math
 import models
+import schemas
 
 
 def create_admin_profile_dict(student: models.Student):
@@ -67,6 +68,8 @@ def calculate_cosine_similarity(students, current_user_id):
         score = min(score, 1.0)
 
         if score > 0.0:
-            matches.append({"student": other_student, "score": score})
+            # Explicitly create the Pydantic model to ensure correct data shape
+            student_data = schemas.StudentInDB.from_orm(other_student)
+            matches.append({"student": student_data, "score": score})
 
     return sorted(matches, key=lambda x: x['score'], reverse=True)

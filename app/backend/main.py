@@ -20,7 +20,6 @@ def get_db():
     try: yield db
     finally: db.close()
 
-# --- Public Endpoints ---
 @app.get("/interests", response_model=List[schemas.Interest])
 def read_interests(db: Session = Depends(get_db)):
     return crud.get_interests(db)
@@ -43,43 +42,27 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = auth.create_access_token(data={"sub": student.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
-# --- User Endpoints (Require Login) ---
 @app.get("/users/me", response_model=schemas.StudentInDB)
 async def read_users_me(current_user: models.Student = Depends(auth.get_current_user)):
     return current_user
 
-@app.put("/users/me", response_model=schemas.StudentInDB)
-async def update_user_profile(profile_data: schemas.StudentUpdate, db: Session = Depends(get_db), current_user: models.Student = Depends(auth.get_current_user)):
-    return crud.update_student_profile(db=db, user=current_user, profile_data=profile_data)
-
-@app.get("/matches/user", response_model=List[schemas.UserMatch])
-def get_user_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.get_current_user)):
-    students = crud.get_students(db)
-    return matching.calculate_cosine_similarity(students, current_user.id)
-
-# --- Admin Endpoints (Require Admin Login) ---
-@app.get("/admin/matches", response_model=List[schemas.AdminMatch])
-def get_all_matches_as_admin(db: Session = Depends(get_db), admin_user: models.Student = Depends(auth.require_admin)):
+# Admin endpoint
+@app.get("/matches/admin", response_model=List[schemas.AdminMatch])
+def get_jaccard_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.require_admin)):
     students = crud.get_students(db)
     return matching.calculate_jaccard_similarity(students)
 
-@app.get("/admin/users", response_model=List[schemas.StudentInDB])
-def get_all_users_as_admin(db: Session = Depends(get_db), admin_user: models.Student = Depends(auth.require_admin)):
-    return crud.get_students(db)
+# User endpoint
+@app.get("/matches/user", response_model=List[schemas.UserMatch])
+def get_cosine_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.get_current_active_user)):
+    students = crud.get_students(db)
+    return matching.calculate_cosine_similarity(students, current_user.id)
 
-@app.delete("/admin/users/{user_id}", response_model=schemas.StudentInDB)
-def delete_user_as_admin(user_id: int, db: Session = Depends(get_db), admin_user: models.Student = Depends(auth.require_admin)):
-    user_to_delete = crud.delete_user_by_admin(db=db, user_id=user_id)
-    if not user_to_delete:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user_to_delete
-
-# --- Secret endpoint to make an admin ---
 @app.get("/_make_admin_")
 def make_admin(db: Session = Depends(get_db)):
     admin_email = "tukurmmr@gmail.com"
-    user = db.query(models.Student).filter(models.Student.email == admin_email).first()
-    if not user: raise HTTPException(status_code=404, detail="Admin user not found. Please register first.")
+    user = crud.get_student_by_email(db, email=admin_email)
+    if not user: raise HTTPException(status_code=404, detail=f"User {admin_email} not found. Please register first.")
     user.is_admin = True
     db.commit()
     return {"message": f"User {admin_email} has been made an admin."}
