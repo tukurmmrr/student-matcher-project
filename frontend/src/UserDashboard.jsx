@@ -2,27 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'https://tukur-student-matcher-project.onrender.com';
+const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // Your Render URL
 
 function UserDashboard() {
-    const [matches, setMatches] = useState([]);
+    const [match, setMatch] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
         if (!token) { navigate('/login'); return; }
-        try {
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-            // Fetch matches from the dedicated user endpoint
-            axios.get(`${API_URL}/matches/user`, config).then(response => {
-                setMatches(response.data);
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+
+        axios.get(`${API_URL}/matches/user`, config)
+            .then(response => {
+                if (response.data && response.data.length > 0) {
+                    setMatch(response.data[0]); // Only store the top match
+                }
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Could not fetch matches:", err);
                 setLoading(false);
             });
-        } catch (err) {
-            console.error("Could not fetch matches:", err);
-            setLoading(false);
-        }
     }, [navigate]);
 
     const handleLogout = () => {
@@ -30,22 +32,23 @@ function UserDashboard() {
         navigate('/login');
     };
 
-    if (loading) return <p>Loading your matches...</p>;
+    if (loading) return <p>Finding your best match...</p>;
 
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
-                 <h2>Your Best Match Is:</h2>
+                 <h2>Your Dashboard</h2>
                  <button onClick={handleLogout} className="btn btn-danger">Log Out</button>
             </div>
-            {matches.length > 0 ? (
-                <div className="card">
+            {match ? (
+                <div className="card text-center">
+                    <div className="card-header">Your Best Match Is:</div>
                     <div className="card-body">
-                        <h5 className="card-title">{matches[0].student.name}</h5>
-                        <h6 className="card-subtitle mb-2 text-muted">{matches[0].student.course.name}</h6>
+                        <h5 className="card-title">{match.student.name}</h5>
                         <p className="card-text">
-                            <strong>Contact:</strong> <a href={`mailto:${matches[0].student.email}`}>{matches[0].student.email}</a>
+                            A student in the **{match.student.course.name}** program.
                         </p>
+                        <a href={`mailto:${match.student.email}`} className="btn btn-primary">Contact {match.student.name}</a>
                     </div>
                 </div>
             ) : (
@@ -54,4 +57,5 @@ function UserDashboard() {
         </div>
     );
 }
+
 export default UserDashboard;

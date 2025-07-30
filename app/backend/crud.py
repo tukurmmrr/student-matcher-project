@@ -10,13 +10,6 @@ def get_student_by_email(db: Session, email: str):
     ).filter(models.Student.email == email).first()
 
 
-def get_student_by_id(db: Session, user_id: int):
-    return db.query(models.Student).options(
-        selectinload(models.Student.interests),
-        selectinload(models.Student.course)
-    ).filter(models.Student.id == user_id).first()
-
-
 def get_students(db: Session):
     return db.query(models.Student).options(
         selectinload(models.Student.interests),
@@ -50,15 +43,7 @@ def create_student(db: Session, student: schemas.StudentCreate):
     return db_student
 
 
-def update_student_profile(db: Session, user: models.Student, profile_data: schemas.StudentUpdate):
-    user.course_id = profile_data.course_id
-    interests = db.query(models.Interest).filter(models.Interest.id.in_(profile_data.interest_ids)).all()
-    user.interests = interests
-    db.commit()
-    db.refresh(user)
-    return user
-
-
+# --- NEW FUNCTION FOR ADMINS TO DELETE USERS ---
 def delete_user_by_admin(db: Session, user_id: int):
     user_to_delete = db.query(models.Student).filter(models.Student.id == user_id).first()
     if user_to_delete:

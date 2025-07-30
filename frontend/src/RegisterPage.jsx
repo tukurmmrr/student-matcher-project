@@ -5,7 +5,7 @@ import axios from 'axios';
 const API_URL = 'https://tukur-student-matcher-project.onrender.com'; // Your live Render URL
 
 function RegisterPage() {
-    const [step, setStep] = useState(1); // To control which step is shown
+    const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -80,7 +80,7 @@ function RegisterPage() {
                 {success && <div className="alert alert-success">{success}</div>}
 
                 {step === 1 && (
-                    <form onSubmit={() => setStep(2)}>
+                    <form onSubmit={(e) => { e.preventDefault(); setStep(2); }}>
                         <div className="mb-3">
                             <label className="form-label">Full Name</label>
                             <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} required />
@@ -110,7 +110,7 @@ function RegisterPage() {
                         </div>
                         <div className="mb-3">
                             <label className="form-label">Interests</label>
-                            <div className="interest-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                 {interests.map(interest => (
                                     <div key={interest.id} className="form-check">
                                         <input className="form-check-input" type="checkbox" id={`interest-${interest.id}`} onChange={() => handleInterestChange(interest.id)} checked={selectedInterests.has(interest.id)}/>

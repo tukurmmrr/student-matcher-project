@@ -48,6 +48,7 @@ def calculate_dice_for_admin(students):
             if not set1 or not set2: continue
 
             intersection = len(set1.intersection(set2))
+            # Dice Coefficient formula is different from Jaccard
             score = (2 * intersection) / (len(set1) + len(set2)) if (len(set1) + len(set2)) > 0 else 0
 
             if student1.course and student2.course and student1.course.id == student2.course.id:
@@ -63,7 +64,7 @@ def calculate_dice_for_admin(students):
     return sorted(matches, key=lambda x: x['score'], reverse=True)
 
 
-# --- USER FUNCTION: PERSONAL MATCHES (Uses Cosine/Jaccard logic for simplicity) ---
+# --- USER FUNCTION: PERSONAL MATCHES ---
 def calculate_matches_for_user(students, current_user_id):
     matches = []
     current_user_obj = next((s for s in students if s.id == current_user_id), None)
