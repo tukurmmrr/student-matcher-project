@@ -1,42 +1,58 @@
-#root {
-  max-width: 1280px;
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f4f4f9;  /* Light gray for professional look */
+  color: #333;  /* Dark text for readability */
+}
+
+.container {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+  padding: 20px;
 }
 
 .card {
-  padding: 2em;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Subtle shadow for depth */
+  transition: transform 0.2s;  /* Smooth hover effect */
 }
 
-.read-the-docs {
-  color: #888;
+.card:hover {
+  transform: translateY(-5px);  /* Lift on hover */
+}
+
+.btn-primary {
+  background-color: #d00000;  /* Liverpool red */
+  border-color: #d00000;
+}
+
+.btn-primary:hover {
+  background-color: #a00000;  /* Darker red on hover */
+}
+
+.form-control {
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  padding: 10px;
+}
+
+h1, h2, h3 {
+  color: #d00000;  /* Red headings for branding */
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;  /* Center content for better layout */
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;  /* Smaller padding on mobile */
+  }
+  .card {
+    margin-bottom: 15px;  /* More spacing on mobile */
+  }
 }
