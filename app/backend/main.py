@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from .database import get_db
+from backend.database import get_db  # Changed to absolute import
 from . import models
 from .auth import router as auth_router
 from .crud import get_all_students, delete_student, make_admin, get_courses, get_interests
@@ -81,3 +81,8 @@ def delete_my_profile(db: Session = Depends(get_db), current_user = Depends(get_
     if not success:
         raise HTTPException(status_code=404, detail="Student not found")
     return {"detail": "Profile deleted successfully"}
+
+# Run the app
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)  # Run as module to fix import issues
