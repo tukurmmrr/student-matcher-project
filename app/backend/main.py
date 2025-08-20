@@ -1,7 +1,10 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))  # Fix for Render import path
+
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from backend.database import get_db  # Changed to absolute import
+from backend.database import get_db  # Absolute import now works with sys.path
 from . import models
 from .auth import router as auth_router
 from .crud import get_all_students, delete_student, make_admin, get_courses, get_interests
@@ -14,7 +17,7 @@ app = FastAPI()
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://studentmatcher.netlify.app"],  # Allow your frontend URL
+    allow_origins=[os.getenv("FRONTEND_URL", "https://studentmatcher.netlify.app")],  # Use env var for frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -85,4 +88,4 @@ def delete_my_profile(db: Session = Depends(get_db), current_user = Depends(get_
 # Run the app
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)  # Run as module to fix import issues
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT", 8000)), reload=True)  # Use PORT env var for Render
