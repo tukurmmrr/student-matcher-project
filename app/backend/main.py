@@ -1,80 +1,83 @@
 from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
-from typing import List
-import crud, models, schemas, matching, security, auth
-from database import SessionLocal, engine
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from .database import get_db
+from . import models
+from .auth import router as auth_router
+from .crud import get_all_students, delete_student, make_admin, get_courses, get_interests
+from .matching import compute_jaccard_matches, compute_dice_matches
+from .auth import get_current_user, get_current_admin
+from .crud import update_student_profile
 
-models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
-origins = [
-    "http://localhost:5173",
-    "https://studentmatcher.netlify.app",
-]
-app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://studentmatcher.netlify.app"],  # Allow your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-def get_db():
-    db = SessionLocal()
-    try: yield db
-    finally: db.close()
+app.include_router(auth_router)
 
-# (Public and User endpoints remain the same)
-@app.get("/interests", response_model=List[schemas.Interest])
-def read_interests(db: Session = Depends(get_db)):
-    return crud.get_interests(db)
-@app.get("/courses", response_model=List[schemas.Course])
-def read_courses(db: Session = Depends(get_db)):
-    return crud.get_courses(db)
-@app.post("/register", response_model=schemas.StudentInDB)
-def register_student(student: schemas.StudentCreate, db: Session = Depends(get_db)):
-    if crud.get_student_by_email(db, email=student.email):
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_student(db=db, student=student)
-@app.post("/token", response_model=schemas.Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    student = auth.authenticate_user(db, form_data.username, form_data.password)
+@app.get("/admin/users")
+def read_users(db: Session = Depends(get_db), current_user = Depends(get_current_admin)):
+    users = get_all_students(db)
+    return users
+
+@app.delete("/admin/users/{student_id}")
+def delete_user(student_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_admin)):
+    success = delete_student(db, student_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return {"detail": "Student deleted successfully"}
+
+@app.post("/admin/make_admin/{student_id}")
+def make_user_admin(student_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_admin)):
+    student = make_admin(db, student_id)
     if not student:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
-    access_token = auth.create_access_token(data={"sub": student.email})
-    return {"access_token": access_token, "token_type": "bearer"}
-@app.get("/users/me", response_model=schemas.StudentInDB)
-async def read_users_me(current_user: models.Student = Depends(auth.get_current_user)):
+        raise HTTPException(status_code=404, detail="Student not found")
+    return student
+
+@app.get("/admin/matches/jaccard")
+def get_jaccard_matches(db: Session = Depends(get_db), current_user = Depends(get_current_admin)):
+    matches = compute_jaccard_matches(db)
+    return matches
+
+@app.get("/admin/matches/dice")
+def get_dice_matches(db: Session = Depends(get_db), current_user = Depends(get_current_admin)):
+    matches = compute_dice_matches(db)
+    return matches
+
+@app.get("/courses")
+def read_courses(db: Session = Depends(get_db)):
+    return get_courses(db)
+
+@app.get("/interests")
+def read_interests(db: Session = Depends(get_db)):
+    return get_interests(db)
+
+@app.get("/users/me")
+def read_current_user(current_user = Depends(get_current_user)):
     return current_user
-@app.get("/matches/user", response_model=List[schemas.UserMatch])
-def get_user_matches(db: Session = Depends(get_db), current_user: models.Student = Depends(auth.get_current_active_user)):
-    students = crud.get_students(db)
-    return matching.calculate_matches_for_user(students, current_user.id)
 
-# --- NEW AND UPDATED ADMIN ENDPOINTS ---
-@app.get("/admin/matches/jaccard", response_model=List[schemas.AdminMatch])
-def get_admin_jaccard_matches(db: Session = Depends(get_db), admin_user: models.Student = Depends(auth.require_admin)):
-    students = crud.get_students(db)
-    return matching.calculate_jaccard_for_admin(students)
+@app.get("/matches/user")
+def get_user_matches(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    matches = compute_jaccard_matches(db, current_user.id)  # Use Jaccard or Dice as default
+    return matches[0] if matches else None  # Return top match
 
-@app.get("/admin/matches/dice", response_model=List[schemas.AdminMatch])
-def get_admin_dice_matches(db: Session = Depends(get_db), admin_user: models.Student = Depends(auth.require_admin)):
-    students = crud.get_students(db)
-    return matching.calculate_dice_for_admin(students)
+@app.patch("/profile")
+def update_profile(course_id: int, interest_ids: list[int], db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    student = update_student_profile(db, current_user.id, course_id, interest_ids)
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return student
 
-@app.get("/admin/users", response_model=List[schemas.StudentInDB])
-def get_all_users_as_admin(db: Session = Depends(get_db), admin_user: models.Student = Depends(auth.require_admin)):
-    return crud.get_students(db)
-
-@app.delete("/admin/users/{user_id}", response_model=schemas.StudentInDB)
-def delete_user_as_admin(user_id: int, db: Session = Depends(get_db), admin_user: models.Student = Depends(auth.require_admin)):
-    user_to_delete = crud.delete_user_by_admin(db=db, user_id=user_id)
-    if not user_to_delete:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user_to_delete
-
-# --- Secret endpoint to make an admin ---
-@app.get("/_make_admin_")
-def make_admin(db: Session = Depends(get_db)):
-    admin_email = "tukurmmr@gmail.com"
-    user = crud.get_student_by_email(db, email=admin_email)
-    if not user: raise HTTPException(status_code=404, detail=f"User {admin_email} not found. Please register first.")
-    user.is_admin = True
-    db.commit()
-    return {"message": f"User {admin_email} has been made an admin."}
+@app.delete("/profile")
+def delete_my_profile(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    success = delete_student(db, current_user.id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return {"detail": "Profile deleted successfully"}
