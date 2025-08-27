@@ -3,8 +3,7 @@ from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 import models
 
-# --- Predefined Lists ---
-
+# --- NEW, MORE GENERIC LISTS ---
 COURSES = [
     "Computer Science", "Data Science", "Software Engineering", "Business Administration",
     "Mechanical Engineering", "Electrical Engineering", "Civil Engineering", "Biology",
@@ -13,23 +12,31 @@ COURSES = [
 ]
 
 INTERESTS = [
-    "Football", "Nature", "Singing", "Working Out", "Basketball", "Volleyball",
-    "Concert", "Tennis", "Writing", "Programming",
-    "Hiking", "Reading", "Movies", "Music", "Gaming", "Cooking", "Photography",
-    "Traveling", "Sports", "Soccer", "Basketball", "Gym", "Art", "Painting",
-    "History", "Chess", "Investing", "Architecture", "Yoga", "Running"
+    # Hobbies & Leisure
+    "Reading", "Movies", "Gaming", "Music", "Cooking", "Baking", "Photography", "Traveling",
+    "Hiking", "Running", "Gym", "Yoga", "Dancing", "Painting", "Drawing",
+
+    # Sports
+    "Football", "Basketball", "Tennis", "Swimming", "Cycling", "Cricket",
+
+    # Academic & Tech
+    "Startups", "Investing", "Technology", "Artificial Intelligence", "Web Development",
+    "Cybersecurity",
+
+    # Social & Other
+    "Volunteering", "History", "Politics", "Chess", "Languages"
 ]
+
 
 # -------------------------
 
 def seed_data():
-    # --- NEW LINE: This creates all the tables first ---
+    # This creates all the tables first
     models.Base.metadata.create_all(bind=engine)
-    # --------------------------------------------------
 
     db: Session = SessionLocal()
     try:
-        # Check if data already exists
+        # Check if data already exists to prevent duplication
         if db.query(models.Interest).first() or db.query(models.Course).first():
             print("Data already exists. Skipping seed.")
             return
@@ -48,6 +55,7 @@ def seed_data():
         print("Seeding complete.")
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     print("Running seed script...")
