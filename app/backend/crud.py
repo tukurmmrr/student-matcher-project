@@ -2,11 +2,13 @@ from sqlalchemy.orm import Session, selectinload
 import models, schemas
 from security import hash_password
 
+
 def get_student_by_email(db: Session, email: str):
     return db.query(models.Student).options(
         selectinload(models.Student.interests),
         selectinload(models.Student.course)
     ).filter(models.Student.email == email).first()
+
 
 def get_students(db: Session):
     return db.query(models.Student).options(
@@ -14,11 +16,14 @@ def get_students(db: Session):
         selectinload(models.Student.course)
     ).all()
 
+
 def get_interests(db: Session):
     return db.query(models.Interest).all()
 
+
 def get_courses(db: Session):
     return db.query(models.Course).all()
+
 
 def create_student(db: Session, student: schemas.StudentCreate):
     hashed_pwd = hash_password(student.password)
@@ -37,6 +42,8 @@ def create_student(db: Session, student: schemas.StudentCreate):
     db.refresh(db_student)
     return db_student
 
+
+# --- THIS FUNCTION WAS MISSING ---
 def update_student_profile(db: Session, user: models.Student, profile_data: schemas.StudentUpdate):
     user.course_id = profile_data.course_id
     interests = db.query(models.Interest).filter(models.Interest.id.in_(profile_data.interest_ids)).all()
@@ -45,6 +52,8 @@ def update_student_profile(db: Session, user: models.Student, profile_data: sche
     db.refresh(user)
     return user
 
+
+# --- THIS FUNCTION WAS MISSING ---
 def delete_user_by_admin(db: Session, user_id: int):
     user_to_delete = db.query(models.Student).filter(models.Student.id == user_id).first()
     if user_to_delete:
