@@ -2,20 +2,18 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// This code matches your GitHub structure by importing directly from src
 import LoginPage from './LoginPage.jsx';
 import RegisterPage from './RegisterPage.jsx';
 import Dashboard from './Dashboard.jsx';
 import ProfilePage from './ProfilePage.jsx';
-
 import './App.css'
 
-// This is a new component for the navigation bar
+// Navigation component - handles user authentication state
 const AppNav = () => {
     const token = localStorage.getItem('accessToken');
     const navigate = useNavigate();
 
-    const handleLogout = () => {
+    const logout = () => {
         localStorage.removeItem('accessToken');
         navigate('/login');
     };
@@ -35,7 +33,9 @@ const AppNav = () => {
                                     <a className="nav-link" href="/profile">My Profile</a>
                                 </li>
                                 <li className="nav-item">
-                                    <button className="btn btn-link nav-link" onClick={handleLogout}>Log Out</button>
+                                    <button className="btn btn-link nav-link" onClick={logout}>
+                                        Log Out
+                                    </button>
                                 </li>
                             </>
                         ) : (
